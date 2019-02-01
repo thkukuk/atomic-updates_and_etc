@@ -48,5 +48,16 @@ There are already different solutions. But they all cover more or less only one 
   * Admin has to replace them with a copy of the file
   * Admin has to check after every update, if adjustements in the copy are needed
 * Systemd like
-  * /usr/lib/.../ → Main configuration
-  * /etc/... → Admin changes
+  * /usr/lib/.../ -> Main configuration
+  * /etc/... -> Admin changes
+  
+  ## Proposals
+  
+  ### passwd, group and shadow
+  
+  
+  ## Where to store original or system configuration files
+  1. /usr/share/defaults/{etc,skel,ssh,ssl): ClearLinux
+  2. /usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...: CoreOS/Container Linux
+  3. /writeable,/etc/writeable: Ubuntu Core
+  4. /usr/etc: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
