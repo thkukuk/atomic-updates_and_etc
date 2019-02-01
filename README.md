@@ -51,13 +51,13 @@ There are already different solutions. But they all cover more or less only one 
   * /usr/lib/.../ -> Main configuration
   * /etc/... -> Admin changes
   
-  ## Proposals
+## Proposals
   
-  ### passwd, group and shadow
+### passwd, group and shadow
   
   
-  ## Where to store original or system configuration files
-  1. /usr/share/defaults/{etc,skel,ssh,ssl): ClearLinux
-  2. /usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...: CoreOS/Container Linux
-  3. /writeable,/etc/writeable: Ubuntu Core
-  4. /usr/etc: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
+## Where to store original or system configuration files
+1. /usr/share/defaults/{etc,skel,ssh,ssl): ClearLinux
+2. /usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...: CoreOS/Container Linux
+3. /writeable,/etc/writeable: Ubuntu Core
+4. /usr/etc: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
