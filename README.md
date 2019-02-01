@@ -57,7 +57,16 @@ There are already different solutions. But they all cover more or less only one 
   
   
 ## Where to store original or system configuration files
+### Currently used by Linux Distributions
 1. /usr/share/defaults/{etc,skel,ssh,ssl): ClearLinux
 2. /usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...: CoreOS/Container Linux
 3. /writeable,/etc/writeable: Ubuntu Core
 4. /usr/etc: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
+
+### My current favorite
+* /usr/share/defaults - contains everything, which else would be belong to /etc
+* /usr/share/defaults/etc - passwd, group, shadow containing system users
+* /usr/share/defaults/etc - rpc, services, protocols: read by glibc NSS plugins after versions in /etc
+* /usr/share/defaults/etc - shells, [ethers, ethertypes, network]: copyied with systemd-tmpfiles
+* /usr/share/defaults/skel - systemd-tmpfiles will symlink this files into /etc/skel
+* /usr/share/defaults/<application> - application specific files, read directly or copied to /etc via systemd-tmpfiles
