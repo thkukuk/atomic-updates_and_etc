@@ -69,4 +69,5 @@ There are already different solutions. But they all cover more or less only one 
 * /usr/share/defaults/etc - rpc, services, protocols: read by glibc NSS plugins after versions in /etc
 * /usr/share/defaults/etc - shells, [ethers, ethertypes, network]: copyied with systemd-tmpfiles
 * /usr/share/defaults/skel - systemd-tmpfiles will symlink this files into /etc/skel
-* /usr/share/defaults/<application> - application specific files, read directly or copied to /etc via systemd-tmpfiles
+* /usr/share/defaults/\<application\> - application specific files, read directly or copied to /etc via systemd-tmpfiles
+* /usr/\*/\<application\> - application specific files, can include configuration files, like today
