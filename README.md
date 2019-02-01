@@ -56,6 +56,8 @@ There are already different solutions. But they all cover more or less only one 
   * /etc/... -> Admin changes
   
 ## Proposals
+
+If this proposals mentions `/usr/etc`, this is only used as example for a location below `/usr`. This can be replaced with any other path in the `/usr` namespace.
   
 ### /etc/passwd, /etc/group and /etc/shadow
 
@@ -93,7 +95,16 @@ Contra:
 
 #### /usr/etc/{passwd,group,shadow} with system user policy
 
+This idea is based on the abvoe `/usr/etc` proposal, but is enhanced with a policy: System accounts are only to be created in `/usr/etc`, normal accounts have to be created in `/etc`. As the UID space for system accounts and normal accounts is different, and packages should only create system accounts, the problem of duplicate UIDs should be solved. If an administrator has to create a system account, he has to do that in `/usr/etc`. As `/usr` is normally read-only on such systems, the distributor has to provide a solution for this. On openSUSE/SUSE, our packaging guidline (https://en.opensuse.org/openSUSE:Packaging_guidelines#Users_and_Groups) provides such a solution.
 
+Pro:
+* glibc NSS plugin to read files in `/usr/etc` exist already (https://github.com/kubic-project/libnss_usrfiles)
+* Easy to configure in `/etc/nsswitch.conf`: `passwd: files usrfiles`. If `/etc` does not contain the entry, look in `/usr/etc`.
+* Solves duplicate UID problem
+
+Contra:
+* nss_compat does not work with this
+* Needs changes in useradd and systemd-sysusers
 
   
 ## Where to store original or system configuration files
