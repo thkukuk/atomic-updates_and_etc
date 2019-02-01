@@ -57,8 +57,44 @@ There are already different solutions. But they all cover more or less only one 
   
 ## Proposals
   
-### passwd, group and shadow
-  
+### /etc/passwd, /etc/group and /etc/shadow
+
+Problem: if a package installation or update creates a new user or group, this new user and/or group are not visible until the next reboot. If a user changes his password or other account information meanwhile, the account from the snapshot cannot be merged anymore with the changes in /etc and either the account is not visible and the software requiring it fails, or the password of the user will be resetted to the old version. If a new user is created by the admin, it could get the same UID and afterwards there is a security problem.
+
+#### /etc/{passwd.d,group.d,shadow.d}
+
+Split `/etc/passwd` into single files for every entry and store them in `/etc/passwd.d`. Every entry would need an unique filename, so that it is easy to merge it later. So the problem of modified accounts hiding new accounts would be solved, but the problem of duplicate UIDs will exist.
+
+Pro:
+* glibc NSS plugin to read files in such directories exist already (https://github.com/thkukuk/libnss_filesd)
+* Creating new users is more or less easy to implement
+* Concept is known to users
+
+Contra:
+* Does not really solve all problems
+* Support for every tool creating accounts needs to be implemented
+* All tools modifying accounts needs support
+* All code changing passwords needs support, especially all PAM modules
+
+In this end, this is a huge development efford for something, which does not solve all problems.
+
+#### /usr/etc/{passwd,group,shadow}
+
+Idea: Packages create and manage the needed system accounts in `/usr/etc/{passwd,group,shadow}`, the admin will create accounts in `/etc/{passwd,group,shadow}`. Changes of system accounts will be stored in `/etc`. No need to merge data, but also does not solve the problem of duplicate UIDs.
+
+Pro:
+* glibc NSS plugin to read files in `/usr/etc` exist already (https://github.com/kubic-project/libnss_usrfiles)
+* Easy to configure in `/etc/nsswitch.conf`: `passwd: files usrfiles`. If `/etc` does not contain the entry, look in `/usr/etc`.
+
+Contra:
+* Does not solve all problems
+* nss_compat does not work with this
+* could be confusing to users, if there are entries for an account in `/etc/shadow`, but not `/etc/passwd`.
+
+#### /usr/etc/{passwd,group,shadow} with system user policy
+
+
+
   
 ## Where to store original or system configuration files
 ### Currently used by Linux Distributions
