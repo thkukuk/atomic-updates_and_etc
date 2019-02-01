@@ -24,6 +24,8 @@ In all cases, the services can be broken, insecure, etc. after an update until t
 
 With atomic updates, another layer of complexity is added: after an update, before the reboot, the changes done by the update are not visible. If an admin changes the configuration files in this time, they will be, depending of how the atomic update is implemented, most likely lost. Or RPM does not see, that there are modified versions of the config file (e.g. they are stored in an overlay filesystem) and thus does not even create \*.rpmsave or \*.rpmnew files. In this case, it's really complicated for the admin to find out that there is a new configuration file and what he has to adjust, since the new file is shadowed by the copy in the overlay filesystem.
 
+## Requirements for a solution
+
 So we need a new way to store and manage configuration files, which:
 * It's visible to the admin that something got updated
 * It's visible, which changes the admin made
