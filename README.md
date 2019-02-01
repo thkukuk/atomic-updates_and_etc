@@ -1,5 +1,9 @@
 # Atomic Updates and /etc
 
+## Rationale
+
+More and more Linux Distributors have a Distribution using atomic updates to update the system (for SUSE it's transactional-update). They all have the problem of updating the files in /etc, but everybody come up with another solution which solved their usecase, but is not generic useable.
+Additional there is the "Factory Reset" of systemd, which no distribution has really fully implemented today. A unique handling of /etc for atomic updates could also help to convience upstream developers to add support to their applications.
 
 ## Definition "Atomic Updates"
 
