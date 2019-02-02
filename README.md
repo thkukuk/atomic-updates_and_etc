@@ -5,6 +5,10 @@
 More and more Linux Distributors have a Distribution using atomic updates to update the system (for SUSE it's transactional-update). They all have the problem of updating the files in /etc, but everybody come up with another solution which solved their usecase, but is not generic useable.
 Additional there is the "Factory Reset" of systemd, which no distribution has really fully implemented today. A unique handling of /etc for atomic updates could also help to convience upstream developers to add support to their applications.
 
+## Goal
+
+The goal is to provide a concept working for all Linux Distributors (like the FHS, preferred is to get this into the FHS). Short to midterm, it should solve the problems with atomic updates. Midterm to longterm, the result should be, that no package installs anything in `/etc`, it should only contain changes made by the system administrator or configuration files managed by the system administrator.
+
 ## Definition "Atomic Updates"
 
 An atomic update is a kind of update that:
@@ -21,10 +25,10 @@ An atomic update is a kind of update that:
 There are different ways to handle config files in RPM. They can be normal files in the filelist of the spec file, they can be marked with %config or %config(noreplace).
 During an update, if the configuration file is modified and the RPM contains a new configuration file:
 1. files not marked: an update would replace the file and all changes are lost
-2. files marked as %config: modified files are moved away as *.rpmsave
-3. files marked as %config(noreplace): modified files stay, new files are written as *.rpmnew
+2. files marked as %config: modified files are moved away as \*.rpmsave
+3. files marked as %config(noreplace): modified files stay, new files are written as \*.rpmnew
 
-In all cases, the services can be broken, insecure, etc. after an update until the admin looks for *.rpmsave and *.rpmnew files and merges his changes with the new configuration file. This is already troublesame.
+In all cases, the services can be broken, insecure, etc. after an update until the admin looks for \*.rpmsave and \*.rpmnew files and merges his changes with the new configuration file. This is already troublesame.
 
 With atomic updates, another layer of complexity is added: after an update, before the reboot, the changes done by the update are not visible. If an admin changes the configuration files in this time, they will be, depending of how the atomic update is implemented, most likely lost. Or RPM does not see, that there are modified versions of the config file (e.g. they are stored in an overlay filesystem) and thus does not even create \*.rpmsave or \*.rpmnew files. In this case, it's really complicated for the admin to find out that there is a new configuration file and what he has to adjust, since the new file is shadowed by the copy in the overlay filesystem.
 
@@ -38,8 +42,8 @@ So we need a new way to store and manage configuration files, which:
 Another problem is, that we have different kind of "configuration" files:
 1. configuration files for applications
 2. configuration files for the system (network, hardware, ...)
-3. "databases" like /etc/rpc, /etc/services, /etc/protocols
-4. system and user accounts (/etc/passwd, /etc/group, /etc/shadow, ...)
+3. "databases" like `/etc/rpc`, `/etc/services`, `/etc/protocols`
+4. system and user accounts (`/etc/passwd`, `/etc/group`, `/etc/shadow`, ...)
 
 There are already different solutions. But they all cover more or less only one part, but not everything.
 
@@ -47,13 +51,13 @@ There are already different solutions. But they all cover more or less only one 
 
 * Three-Way-Diff
   * Conflicts still need to be solved manually
-* /etc contains symlinks
+* `/etc` contains symlinks
   * Files are always current and in the right version as long as an admin does not modify them
   * Admin has to replace them with a copy of the file
   * Admin has to check after every update, if adjustements in the copy are needed
 * Systemd like
-  * /usr/lib/.../ -> Main configuration
-  * /etc/... -> Admin changes
+  * `/usr/lib/.../` -> Main configuration
+  * `/etc/...` -> Admin changes
   
 ## Proposals
 
