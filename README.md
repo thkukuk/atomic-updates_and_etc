@@ -133,7 +133,7 @@ Contra:
 This is a variant of "Symlink and copy" which e.g. systemd is doing: there is no file in `/etc`, the original file is in `/usr/etc`. The application is modified to look at first in `/etc`, and if there is no config file, to look in `/usr/etc`. If the admin wants to make changes, he has to copy the file and edit it.
 
 Pro:
-* `/etc/` only contains modified files and is not full of symlinks
+* `/etc` only contains modified files and is not full of symlinks
 * changes to the application are small, most of the time smaller than adding systemd-tmpfiles support to the package
 * admin can diff which changes he made
 * this works with even complex configuration files stored in xml or json format
