@@ -145,9 +145,31 @@ Contra:
 
 #### Override parts of configuration files
 
+For an admin it would be much simpler if he could override single entries in a configuration file and store only this changes below `/etc`. This is not possible for all formats of configuration files (e.g. for xml or json, this could become really tricky), but quite easily to do for key=value and ini-style configuration files.
+Depending on the meaning of the options, it could be that not all options could be overwritten. See https://www.freedesktop.org/software/systemd/man/systemd.unit.html, "Overriding vendor settings" for more details and examples.
+
 ##### Config with changed variables only
 
+If there is a `/usr/etc/foo.conf` file, `/etc/foo.conf` would only contain the changes.
+
+Pro:
+* well arranged for the admin
+* easy to implement. E.g. bash: source `/usr/etc/foo.conf` and afterwards `/etc/foo.conf`, if it exist. Or for other code, look for the variable first in `/etc/foo.conf` and afterwards, if not found, in `/usr/etc/foo.conf`
+* Could be implemented in ini support libraries like glib, for perl and ruby, so applications even don't notice this
+
+Contra:
+* quite confusing, as a file in `/etc` could either be a full copy of a configuration file with small changes, or contains only the changes done to the file.
+
 ##### Drop in directory
+
+Alternatively, one can create a directory named `/etc/foo.conf.d` and place a drop-in file *override.conf* there that only contains the specific changed settings one is interested in. Multiple such drop-in files could be read and processed in lexicographic order of their filenames.
+
+Pro:
+* clearly visible, which config files contains overrides, and which replaces the system provided configuration files.
+
+Contra:
+* high implementation efford, maybe a generic library providing an interface would help. libsystemd useable for this?
+* could create surprising results if different config file snippets contain conflicting options.
 
 ### System databases
 
