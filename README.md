@@ -110,20 +110,64 @@ Contra:
 * nss_compat does not work with this
 * Needs changes in useradd and systemd-sysusers
 
+### Application configuration files
+
+Problem: this problem is not alone for atomic updates, but also for normal distributions: the administrator makes changes to a configuration file and the next update contains a complete new, incompatible configuration file for that package. Somehow the admin needs to be informed about this and the changes needs to be ported to the new config file.
+
+#### Symlink and copy
+
+The easiest way to update application configuration files without getting into conflict with user modifications is to install the configuration file below `/usr/etc` and create a symlink to `/etc` with systemd-tmpfiles. The application only looks in `/etc` for the configuration file. As long as the user does not need to modify it, it's always current. If the admin needs to make changes, he has to replace the symlink with a copy of the configuration file and modify that. Afterwards he has to active watch for changes after updates in the original configuration file.
+
+Pro:
+* only packaging change, no application change necessary
+* admin can diff which changes he made
+* this works with even complex configuration files stored in xml or json format
+
+Contra:
+* admin will not notice, if the original configuration file was changed during an update, he has to active watch for this
+* after an update of the configuration file, the admin has to manually merge his changes to the new configuration file
+* after an update, the admin cannot diff anymore his version with the original one to see, which changes he made
+
+#### Override complete configuration file
+
+This is a variant of "Symlink and copy" which e.g. systemd is doing: there is no file in `/etc`, the original file is in `/usr/etc`. The application is modified to look at first in `/etc`, and if there is no config file, to look in `/usr/etc`. If the admin wants to make changes, he has to copy the file and edit it.
+
+Pro:
+* `/etc/` only contains modified files and is not full of symlinks
+* changes to the application are small, most of the time smaller than adding systemd-tmpfiles support to the package
+* admin can diff which changes he made
+* this works with even complex configuration files stored in xml or json format
+
+Contra:
+* admin will not notice, if the original configuration file was changed during an update, he has to active watch for this
+* after an update of the configuration file, the admin has to manually merge his changes to the new configuration file
+* after an update, the admin cannot diff anymore his version with the original one to see, which changes he made
+
+#### Override parts of configuration files
+
+##### Config with changed variables only
+
+##### Drop in directory
+
+### System databases
+
+There are files in `/etc` which are strictly spoken no configuration files. Like `/etc/rpc`, `/etc/services` and `/etc/protocols`. They are changed very seldom, but sometimes new system applications or third party software needs to make additions.
+Move this files to `/usr/etc` and let the system search at first in `/etc` and afterwards in `/usr/etc`. `/etc` would contain only the changes done by the admin and third party software.
+A glibc NSS plugin to read files in `/usr/etc` exist already (https://github.com/kubic-project/libnss_usrfiles), so it is easy configurable and the admin sees, which changes he made.
   
 ## Where to store original or system configuration files
 ### Currently used by Linux Distributions
-1. /usr/share/defaults/{etc,skel,ssh,ssl): ClearLinux
-2. /usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...: CoreOS/Container Linux
-3. /writeable,/etc/writeable: Ubuntu Core
-4. /usr/etc: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
+1. `/usr/share/defaults/{etc,skel,ssh,ssl}`: ClearLinux
+2. `/usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...`: CoreOS/Container Linux
+3. `/writeable,/etc/writeable`: Ubuntu Core
+4. `/usr/etc`: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
 
 ### My current favorite
-* /usr/share/defaults - contains everything, which else would be belong to /etc
-* /usr/share/defaults/etc - passwd, group, shadow containing system users
-* /usr/share/defaults/etc - aliases, ethers, protocols, rpc, services: read by glibc NSS plugins after versions in /etc
-* /usr/share/defaults/etc - shells, ethertypes, network: copyied with systemd-tmpfiles
-* /usr/share/defaults/skel - systemd-tmpfiles will symlink this files into /etc/skel
-* /usr/share/defaults/pam.d - default distribution specific PAM configuration files. /etc/pam.d will overwrite this.
-* /usr/share/defaults/\<application\> - application specific files, read directly or copied to /etc via systemd-tmpfiles
-* /usr/\*/\<application\> - application specific files, can include configuration files, like today
+* `/usr/share/defaults` - contains everything, which else would be belong to `/etc`
+* `/usr/share/defaults/etc` - passwd, group, shadow containing system users
+* `/usr/share/defaults/etc` - aliases, ethers, protocols, rpc, services: read by glibc NSS plugins after versions in `/etc`
+* `/usr/share/defaults/etc` - shells, ethertypes, network: copyied with systemd-tmpfiles
+* `/usr/share/defaults/skel` - systemd-tmpfiles will symlink this files into /etc/skel
+* `/usr/share/defaults/pam.d` - default distribution specific PAM configuration files. `/etc/pam.d` will overwrite this.
+* `usr/share/defaults/\<application\>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
+* `/usr/\*/\<application\>` - application specific files, can include configuration files, like today
