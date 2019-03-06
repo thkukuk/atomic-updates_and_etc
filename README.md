@@ -1,10 +1,10 @@
 # Atomic Updates and /etc
 
-Version 2.0, 2019-03-06
+`Version 2.0, 2019-03-06`
 
 ## Rationale
 
-More and more Linux Distributors have a Distribution using atomic updates to update the system (for SUSE it's transactional-update). They all have the problem of updating the files in /etc, but everybody come up with another solution which solved their usecase, but is not generic useable.
+More and more Linux Distributors have a Distribution using atomic updates to update the system (for SUSE it's transactional-update). They all have the problem of updating the files in `/etc`, but everybody come up with another solution which solved their usecase, but is not generic useable.
 Additional there is the "Factory Reset" of systemd, which no distribution has really fully implemented today. A unique handling of /etc for atomic updates could also help to convience upstream developers to add support to their applications.
 
 ## Goal
@@ -73,7 +73,7 @@ next update contains a complete new, incompatible configuration file for that
 package. Somehow the admin needs to be informed about this and the changes
 needs to be ported to the new config file.
 Additional, it should not be necessary for a "Factory Reset" to copy many
-configuration files from somewhere to /etc (which means write systemd-tmpfiles
+configuration files from somewhere to `/etc` (which means write systemd-tmpfiles
 for everything), but the application should look in the right directory for
 the system default configuration file and apply changes from `/etc`.
 
@@ -92,35 +92,27 @@ We have:
 * `/etc/logrotate.conf`
 * `/etc/logrotate.conf.d`
 
-Why do we need `logrotate.conf` in `/etc`, if that only has some defaults you can
-overwrite per configuration file and contains the include paths?
-Why do all distribution packages install their configs in
-`/etc/logrotate.conf.d`?
+Why do we need `logrotate.conf` in `/etc`, if that only has some defaults you can overwrite per configuration file and contains the include paths?
+Why do all distribution packages install their configs in `/etc/logrotate.conf.d`?
 
 Compare this with `sysctl.conf`:
 * `/usr/lib/sysctl.d/*.conf`
 * `/etc/sysctl.d/*.conf`
 * `/etc/sysctl.conf`
 
-The distributor put's it's default configuration in `/usr/lib/sysctl.d`, the
-admin can overwrite them by putting the changes in `/etc/sysctl.d`. The
-`/etc/sysctl.conf` file isn't needed at all, why do we install an empty
-configuration file, which only explains where to put the real configuration?
-If we wouldn't install `/etc/sysctl.conf`, sysctl would be already a great
-example for how this problems can be solved.
-Same for dracut, it works the same way, including that `/etc/dracut.conf`
-only contains the comment where to put the configuration.
+The distributor put's it's default configuration in `/usr/lib/sysctl.d`, the admin can overwrite them by putting the changes in `/etc/sysctl.d`. The `/etc/sysctl.conf` file isn't needed at all, why do we install an empty configuration file, which only explains where to put the real configuration?
+If we wouldn't install `/etc/sysctl.conf`, sysctl would be already a great example for how this problems can be solved.
+Same for dracut, it works the same way, including that `/etc/dracut.conf` only contains the comment where to put the configuration.
 
-For logrotate this would mean:
+For logrotate this could mean:
 * Install `logrotate.conf` in `/usr/share/defaults/logrotate`
 * Have two include directories:
- * `/usr/share/defaults/logrotate/logrotate.d` for distributor config files
- * `/etc/logrotate.d` for local config files
+  * `/usr/share/defaults/logrotate/logrotate.d` for distributor config files
+  * `/etc/logrotate.d` for local config files
 
 For glibc/ldconfig this could mean:
 * mv `/etc/ld.so.conf` to `/usr/share/defaults/ldconfig/ld.so.conf`
-* `/usr/share/defaults/ldconfig/ld.so.conf.d` for distribution specific paths,
-e.g. libgraphivz6
+* `/usr/share/defaults/ldconfig/ld.so.conf.d` for distribution specific paths, e.g. libgraphivz6
 * `/etc/ld.so.conf.d` for local changes
 
 By a simple packaging change, all problems with atomic updates and "Factory
@@ -132,31 +124,21 @@ solved relative simple by changes in how it gets packaged.
 In the end, this is what systemd is already doing today.
 
 Applications install their default configuration in
-`/usr/share/defaults/\<application\>/`. The admin can copy this configuration file to
+`/usr/share/defaults/<application>/`. The admin can copy this configuration file to
 `/etc` and adjust that. The application prefers the `/etc/` version over the
-`/usr/share/defaults/\<application\>/` version. This possibility is important if the
+`/usr/share/defaults/<application>/` version. This possibility is important if the
 configuration file is in a format, where parts cannot be overwritten easily,
 like xml or json.
 
 If the format of the configuration file allows overrides of entries, there
-should be a `/etc/appconfig.d` directory in which local changes can be
+should be a `/etc/application.conf.d` directory in which local changes can be
 written. The application has to merge this entries when reading the
 configuration.
 
 As workflow:
 * Applications looks for `/etc/application.conf`.
-* If this file does not exist, load
-`/usr/share/defaults/application/application.conf`
+* If this file does not exist, load `/usr/share/defaults/application/application.conf`
 * Look for overrides in `/etc/application.conf.d` and merge them
-
-
-* admin can diff which changes he made
-* this works with even complex configuration files stored in xml or json format
-
-Contra:
-* admin will not notice, if the original configuration file was changed during an update, he has to active watch for this
-* after an update of the configuration file, the admin has to manually merge his changes to the new configuration file
-* after an update, the admin cannot diff anymore his version with the original one to see, which changes he made
 
 See https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Examples, "Overriding vendor settings" for more details and examples.
 
@@ -243,6 +225,6 @@ Contra:
 * `/usr/share/defaults/etc` - shells, ethertypes, network: copyied with systemd-tmpfiles
 * `/usr/share/defaults/skel` - systemd-tmpfiles will symlink this files into /etc/skel
 * `/usr/share/defaults/pam.d` - default distribution specific PAM configuration files. `/etc/pam.d` will overwrite this.
-* `usr/share/defaults/\<application\>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
-* `/usr/\*/\<application\>` - application specific files, can include configuration files, like today
+* `usr/share/defaults/<application>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
+* `/usr/\*/<application>` - application specific files, can include configuration files, like today
 * `/usr/lib/sysimage/etc` - passwd, group, shadow containing system users
