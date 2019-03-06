@@ -1,5 +1,7 @@
 # Atomic Updates and /etc
 
+This is the first version of this Document and meanwhile outdated.
+
 ## Rationale
 
 More and more Linux Distributors have a Distribution using atomic updates to update the system (for SUSE it's transactional-update). They all have the problem of updating the files in /etc, but everybody come up with another solution which solved their usecase, but is not generic useable.
