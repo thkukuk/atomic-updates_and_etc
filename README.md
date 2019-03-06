@@ -84,7 +84,7 @@ applications supports `.d` directories with configuration snippets (aliases.d,
 ant.d, bash-completion.d, chrony.d, cron.d, depmod.d, dnsmasq.d dracut.conf.d,
 grub.d, issue.d, logrotate.d, modprobe.d, netconfig.d, sudoers.d, sysctl.d,
 ...) and there are already applications, which installs their default
-configuration file in `/usr/share/defaults/\<application\>` (at-spi2, telemetrics,...). So
+configuration file in `/usr/share/defaults/<application>` (at-spi2, telemetrics,...). So
 let's combine that.
 
 Look at first at logrotate.
