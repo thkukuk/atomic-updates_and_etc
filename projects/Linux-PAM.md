@@ -11,3 +11,4 @@ Necessary changes:
 * make `/usr/lib/pam.d` configureable at build time
 * move config files
 * adjust pam-config
+* libeconf for /etc/login.defs
