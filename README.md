@@ -214,7 +214,7 @@ Contra:
 
 ## Where to store original or system configuration files
 ### Currently used by Linux Distributions
-1. `/usr/share/defaults/{etc,skel,ssh,ssl}`: ClearLinux
+1. `/usr/share/defaults/{etc,skel,ssh,ssl}`: ClearLinux and some packages
 2. `/usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...`: CoreOS/Container Linux
 3. `/writeable,/etc/writeable`: Ubuntu Core
 4. `/usr/etc`: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
@@ -228,3 +228,5 @@ Contra:
 * `usr/share/defaults/<application>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
 * `/usr/\*/<application>` - application specific files, can include configuration files, like today
 * `/usr/lib/sysimage/etc` - passwd, group, shadow containing system users
+
+passwd, group and shadow are not shareable between different systems (UID,GID could be different), that's why this should not be below /usr/share. Putting everything below /usr/lib/sysimage is not really intiutive and has already conflicts (e.g. rpm).
