@@ -34,7 +34,8 @@ During an update, if the configuration file is modified and the RPM contains a n
 2. files marked as %config: modified files are moved away as \*.rpmsave
 3. files marked as %config(noreplace): modified files stay, new files are written as \*.rpmnew
 
-In all cases, the services can be broken, insecure, etc. after an update until the admin looks for \*.rpmsave and \*.rpmnew files and merges his changes with the new configuration file. This is already troublesame.
+In all cases, the services can be broken, insecure, etc. after an update until
+the admin has to look for \*.rpmsave and \*.rpmnew files and merge his changes with the new configuration files. This is already troublesame.
 
 With atomic updates, another layer of complexity is added: after an update, before the reboot, the changes done by the update are not visible. If an admin changes the configuration files in this time, they will be, depending of how the atomic update is implemented, most likely lost. Or RPM does not see, that there are modified versions of the config file (e.g. they are stored in an overlay filesystem) and thus does not even create \*.rpmsave or \*.rpmnew files. In this case, it's really complicated for the admin to find out that there is a new configuration file and what he has to adjust, since the new file is shadowed by the copy in the overlay filesystem.
 
@@ -91,13 +92,14 @@ grub.d, issue.d, logrotate.d, modprobe.d, netconfig.d, sudoers.d, sysctl.d,
 configuration file in `/usr/share/defaults/<application>` (at-spi2, telemetrics,...). So
 let's combine that.
 
-Look at first at logrotate.
+Look at first at Linux-PAM
 We have:
-* `/etc/logrotate.conf`
-* `/etc/logrotate.conf.d`
+* `/usr/lib/pam.d`
+* `/etc/pam.d`
 
-Why do we need `logrotate.conf` in `/etc`, if that only has some defaults you can overwrite per configuration file and contains the include paths?
-Why do all distribution packages install their configs in `/etc/logrotate.conf.d`?
+Why do Linux Distributions install everything in `/etc/pam.d`? Why is nearly
+nobody using `/usr/lib/pam.d`? Maybe `/usr/lib/pam.d` does not really sound
+like configuration files?
 
 Compare this with `sysctl.conf`:
 * `/usr/lib/sysctl.d/*.conf`
@@ -108,20 +110,29 @@ The distributor put's it's default configuration in `/usr/lib/sysctl.d`, the adm
 If we wouldn't install `/etc/sysctl.conf`, sysctl would be already a great example for how this problems can be solved.
 Same for dracut, it works the same way, including that `/etc/dracut.conf` only contains the comment where to put the configuration.
 
-For logrotate this could mean:
+Or RPM: we have `/etc/rpm` and `/usr/lib/rpm`. On openSUSE, `/etc/rpm`
+contains many distribution specific macro files, like `/usr/lib/rpm` does. Why
+has the user to search in both directories? Why not use only `/usr/lib/rpm`
+for distribution specific files and the user can use /etc/rpm for his personal
+macros?
+The RPM documentation clearly states: `/usr/lib/rpm/macros` is the system
+default, per-system adjustements should go to `/etc/rpm` and user changes to
+`~/.rpmmacros`.
+
+An adjustement for logrotate could look like:
 * Install `logrotate.conf` in `/usr/share/defaults/logrotate`
 * Have two include directories:
   * `/usr/share/defaults/logrotate/logrotate.d` for distributor config files
   * `/etc/logrotate.d` for local config files
 
-For glibc/ldconfig this could mean:
+For glibc/ldconfig a solution could look like:
 * mv `/etc/ld.so.conf` to `/usr/share/defaults/ldconfig/ld.so.conf`
 * `/usr/share/defaults/ldconfig/ld.so.conf.d` for distribution specific paths, e.g. libgraphivz6
-* `/etc/ld.so.conf.d` for local changes
+* `/etc/ld.so.conf.d` for local changes, like nvidia-gfxG04.conf
 
-By a simple packaging change, all problems with atomic updates and "Factory
-Reset" are solved. There are many more packages for which the problem could be
-solved relative simple by changes in how it gets packaged.
+By a simple packaging changes, many problems with atomic updates and "Factory
+Reset" were alreadz solved. There are many more packages for which the problem
+could be solved relative simple by changes in how it gets packaged.
 
 #### Formal Proposal
 
