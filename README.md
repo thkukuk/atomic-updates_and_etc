@@ -130,10 +130,10 @@ For glibc/ldconfig a solution could look like:
 * `/usr/share/defaults/ldconfig/ld.so.conf.d` for distribution specific paths, e.g. libgraphivz6
 * `/etc/ld.so.conf.d` for local changes, like nvidia-gfxG04.conf
 
-There is also stuff, which does not belong to /etc at all. /etc/uefi/certs contain binary files installed by several RPMs. This are clearly no config files (not editable by the user) and thus belongs to /usr/share or something similar.
+There is also stuff, which does not belong to `/etc` at all. `/etc/uefi/certs` contain binary files installed by several RPMs. This are clearly no config files (not editable by the user) and thus belongs to `/usr/share` or something similar.
 
 By a simple packaging changes, many problems with atomic updates and "Factory
-Reset" were alreadz solved. There are many more packages for which the problem
+Reset" would be already solved. There are many more packages for which the problem
 could be solved relative simple by changes in how it gets packaged.
 
 #### Formal Proposal
