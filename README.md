@@ -1,6 +1,6 @@
 # Atomic Updates and /etc
 
-`Version 2.1, 2019-04-16`
+`Version 2.2, 2019-05-06`
 
 ## Rationale
 
@@ -132,7 +132,7 @@ For glibc/ldconfig a solution could look like:
 
 There is also stuff, which does not belong to `/etc` at all. `/etc/uefi/certs` contain binary files installed by several RPMs. This are clearly no config files (not editable by the user) and thus belongs to `/usr/share` or something similar.
 
-By a simple packaging changes, many problems with atomic updates and "Factory
+By simple packaging changes, many problems with atomic updates and "Factory
 Reset" would be already solved. There are many more packages for which the problem
 could be solved relative simple by changes in how it gets packaged.
 
@@ -230,11 +230,19 @@ Contra:
 
 
 ## Where to store original or system configuration files
-### Currently used by Linux Distributions
+
+As there is not yet a standard directory below `/usr`, a new one needs to be created. There are some requirements:
+* Easy to find and remember for the system administrator
+* No conflict with FHS
+* The name should not confuse administrators
+* It should be clear, that this are default configuration files and changes should not be done here
+
+### Currently used by Linux Distributions or suggested by others:
 1. `/usr/share/defaults/{etc,skel,ssh,ssl}`: ClearLinux and some packages
 2. `/usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...`: CoreOS/Container Linux
 3. `/writeable,/etc/writeable`: Ubuntu Core
 4. `/usr/etc`: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
+5. `/usr/share/sysconfig` (wouldn't people confuse this with `/etc/sysconfig`, means they want to make changes here?)
 
 ### My current favorite
 * `/usr/share/defaults` - contains everything, which else would be belong to `/etc`
