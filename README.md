@@ -243,6 +243,7 @@ As there is not yet a standard directory below `/usr`, a new one needs to be cre
 3. `/writeable,/etc/writeable`: Ubuntu Core
 4. `/usr/etc`: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
 5. `/usr/share/sysconfig` (wouldn't people confuse this with `/etc/sysconfig`, means they want to make changes here?)
+6. `/usr/share/misc`: used by several tools already, but FHS defines it a little bit different
 
 ### My current favorite
 * `/usr/share/defaults` - contains everything, which else would be belong to `/etc`
