@@ -248,7 +248,7 @@ As there is not yet a standard directory below `/usr`, a new one needs to be cre
 ### My current favorite
 * `/usr/share/defaults` - contains everything, which else would be belong to `/etc`
 * `/usr/share/defaults/etc` - aliases, ethers, protocols, rpc, services: read by glibc NSS plugins after versions in `/etc`
-* `/usr/share/defaults/etc` - shells, ethertypes, network: copyied with systemd-tmpfiles
+* `/usr/share/defaults/etc` - shells, ethertypes, network: copied with systemd-tmpfiles
 * `/usr/share/defaults/skel` - systemd-tmpfiles will symlink this files into /etc/skel
 * `/usr/share/defaults/pam.d` - default distribution specific PAM configuration files. `/etc/pam.d` will overwrite this.
 * `usr/share/defaults/<application>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
