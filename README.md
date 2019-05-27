@@ -1,6 +1,6 @@
 # Atomic Updates and /etc
 
-`Version 2.1, 2019-04-16`
+`Version 2.2, 2019-05-06`
 
 ## Rationale
 
@@ -130,8 +130,10 @@ For glibc/ldconfig a solution could look like:
 * `/usr/share/defaults/ldconfig/ld.so.conf.d` for distribution specific paths, e.g. libgraphivz6
 * `/etc/ld.so.conf.d` for local changes, like nvidia-gfxG04.conf
 
-By a simple packaging changes, many problems with atomic updates and "Factory
-Reset" were alreadz solved. There are many more packages for which the problem
+There is also stuff, which does not belong to `/etc` at all. `/etc/uefi/certs` contain binary files installed by several RPMs. This are clearly no config files (not editable by the user) and thus belongs to `/usr/share` or something similar.
+
+By simple packaging changes, many problems with atomic updates and "Factory
+Reset" would be already solved. There are many more packages for which the problem
 could be solved relative simple by changes in how it gets packaged.
 
 #### Formal Proposal
@@ -228,16 +230,25 @@ Contra:
 
 
 ## Where to store original or system configuration files
-### Currently used by Linux Distributions
+
+As there is not yet a standard directory below `/usr`, a new one needs to be created. There are some requirements:
+* Easy to find and remember for the system administrator
+* No conflict with FHS
+* The name should not confuse administrators
+* It should be clear, that this are default configuration files and changes should not be done here
+
+### Currently used by Linux Distributions or suggested by others:
 1. `/usr/share/defaults/{etc,skel,ssh,ssl}`: ClearLinux and some packages
 2. `/usr/share/{baselayout,skel,pam.d,coreos,...},/usr/lib64/pam.d,...`: CoreOS/Container Linux
 3. `/writeable,/etc/writeable`: Ubuntu Core
 4. `/usr/etc`: openSUSE MicroOS, RedHat/Fedora/CentOS Atomic
+5. `/usr/share/sysconfig` (wouldn't people confuse this with `/etc/sysconfig`, means they want to make changes here?)
+6. `/usr/share/misc`: used by several tools already, but FHS defines it a little bit different
 
 ### My current favorite
 * `/usr/share/defaults` - contains everything, which else would be belong to `/etc`
 * `/usr/share/defaults/etc` - aliases, ethers, protocols, rpc, services: read by glibc NSS plugins after versions in `/etc`
-* `/usr/share/defaults/etc` - shells, ethertypes, network: copyied with systemd-tmpfiles
+* `/usr/share/defaults/etc` - shells, ethertypes, network: copied with systemd-tmpfiles
 * `/usr/share/defaults/skel` - systemd-tmpfiles will symlink this files into /etc/skel
 * `/usr/share/defaults/pam.d` - default distribution specific PAM configuration files. `/etc/pam.d` will overwrite this.
 * `usr/share/defaults/<application>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
