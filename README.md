@@ -1,6 +1,6 @@
 # Atomic Updates and /etc
 
-`Version 2.2, 2019-05-06`
+`Version 2.3, 2019-06-03`
 
 ## Rationale
 
@@ -45,6 +45,7 @@ So we need a new way to store and manage configuration files, which:
 * It's visible to the admin that something got updated
 * It's visible, which changes the admin made
 * Best if the changes could be merged automatically
+* There should be only one directory to search below for default configuration files
 
 Another problem is, that we have different kind of "configuration" files:
 1. configuration files for applications
@@ -84,13 +85,14 @@ the system default configuration file and apply changes from `/etc`.
 
 #### Analysis
 
-An analysis of configuration files in `/etc` shows, that already many
-applications supports `.d` directories with configuration snippets (aliases.d,
-ant.d, bash-completion.d, chrony.d, cron.d, depmod.d, dnsmasq.d dracut.conf.d,
-grub.d, issue.d, logrotate.d, modprobe.d, netconfig.d, sudoers.d, sysctl.d,
-...) and there are already applications, which installs their default
-configuration file in `/usr/share/defaults/<application>` (at-spi2, telemetrics,...). So
-let's combine that.
+An analysis of configuration files in `/etc` on an openSUSE Tumbleweed
+installation shows, that already many applications supports `.d` directories
+with configuration snippets (aliases.d, ant.d, bash-completion.d, chrony.d,
+cron.d, depmod.d, dnsmasq.d dracut.conf.d, grub.d, issue.d, logrotate.d,
+modprobe.d, netconfig.d, sudoers.d, sysctl.d,  ...) and there are already
+applications, which installs their default configuration file in
+`/usr/share/defaults/<application>` (at-spi2, telemetrics,...). So let's
+combine that.
 
 Look at first at Linux-PAM
 We have:
@@ -106,31 +108,24 @@ Compare this with `sysctl.conf`:
 * `/etc/sysctl.d/*.conf`
 * `/etc/sysctl.conf`
 
-The distributor put's it's default configuration in `/usr/lib/sysctl.d`, the admin can overwrite them by putting the changes in `/etc/sysctl.d`. The `/etc/sysctl.conf` file isn't needed at all, why do we install an empty configuration file, which only explains where to put the real configuration?
-If we wouldn't install `/etc/sysctl.conf`, sysctl would be already a great example for how this problems can be solved.
+The distributor put's it's default configuration in `/usr/lib/sysctl.d`, the
+admin can overwrite them by putting the changes in `/etc/sysctl.d`. The
+`/etc/sysctl.conf` file isn't needed at all, it shouldn't be installed.
 Same for dracut, it works the same way, including that `/etc/dracut.conf` only contains the comment where to put the configuration.
-
-Or RPM: we have `/etc/rpm` and `/usr/lib/rpm`. On openSUSE, `/etc/rpm`
-contains many distribution specific macro files, like `/usr/lib/rpm` does. Why
-has the user to search in both directories? Why not use only `/usr/lib/rpm`
-for distribution specific files and the user can use /etc/rpm for his personal
-macros?
-The RPM documentation clearly states: `/usr/lib/rpm/macros` is the system
-default, per-system adjustements should go to `/etc/rpm` and user changes to
-`~/.rpmmacros`.
-
-An adjustement for logrotate could look like:
-* Install `logrotate.conf` in `/usr/share/defaults/logrotate`
-* Have two include directories:
-  * `/usr/share/defaults/logrotate/logrotate.d` for distributor config files
-  * `/etc/logrotate.d` for local config files
 
 For glibc/ldconfig a solution could look like:
 * mv `/etc/ld.so.conf` to `/usr/share/defaults/ldconfig/ld.so.conf`
 * `/usr/share/defaults/ldconfig/ld.so.conf.d` for distribution specific paths, e.g. libgraphivz6
 * `/etc/ld.so.conf.d` for local changes, like nvidia-gfxG04.conf
 
-There is also stuff, which does not belong to `/etc` at all. `/etc/uefi/certs` contain binary files installed by several RPMs. This are clearly no config files (not editable by the user) and thus belongs to `/usr/share` or something similar.
+The disadvantage of this is, based on feedback from several talks: the files
+are spread over different directories in `/usr/lib`, admins don't like that, as
+it is hard to find something for them.
+
+There is also stuff, which does not belong to `/etc` at all. `/etc/uefi/certs`
+contain binary files installed by several RPMs. This are clearly no config
+files (not editable by the user) and thus belongs to `/usr/share` or something
+similar.
 
 By simple packaging changes, many problems with atomic updates and "Factory
 Reset" would be already solved. There are many more packages for which the problem
@@ -138,7 +133,7 @@ could be solved relative simple by changes in how it gets packaged.
 
 #### Formal Proposal
 
-In the end, this is what systemd is already doing today.
+Something similar to what systemd is already doing today:
 
 Applications install their default configuration in
 `/usr/share/defaults/<application>/`. The admin can copy this configuration file to
@@ -177,6 +172,9 @@ the user will be resetted to the old version. If a new user is created by the
 admin, it could get the same UID and afterwards there is a security problem.
 systemd-sysusers will not solve this problem, as the new user is often already
 requried for installation of the package and created in the %pre section.
+
+While several options were evaluated, there is no real good
+solution.
 
 #### /etc/{passwd.d,group.d,shadow.d}
 
@@ -232,7 +230,7 @@ Contra:
 ## Where to store original or system configuration files
 
 As there is not yet a standard directory below `/usr`, a new one needs to be created. There are some requirements:
-* Easy to find and remember for the system administrator
+* Easy to find and remember for the system administrator (everything in one place)
 * No conflict with FHS
 * The name should not confuse administrators
 * It should be clear, that this are default configuration files and changes should not be done here
@@ -245,7 +243,7 @@ As there is not yet a standard directory below `/usr`, a new one needs to be cre
 5. `/usr/share/sysconfig` (wouldn't people confuse this with `/etc/sysconfig`, means they want to make changes here?)
 6. `/usr/share/misc`: used by several tools already, but FHS defines it a little bit different
 
-### My current favorite
+### My old favorite
 * `/usr/share/defaults` - contains everything, which else would be belong to `/etc`
 * `/usr/share/defaults/etc` - aliases, ethers, protocols, rpc, services: read by glibc NSS plugins after versions in `/etc`
 * `/usr/share/defaults/etc` - shells, ethertypes, network: copied with systemd-tmpfiles
@@ -255,4 +253,11 @@ As there is not yet a standard directory below `/usr`, a new one needs to be cre
 * `/usr/\*/<application>` - application specific files, can include configuration files, like today
 * `/usr/lib/sysimage/etc` - passwd, group, shadow containing system users
 
-passwd, group and shadow are not shareable between different systems (UID,GID could be different), that's why this should not be below /usr/share. Putting everything below /usr/lib/sysimage is not really intiutive and has already conflicts (e.g. rpm).
+`/usr/share` is defined as beeing shareable between different hosts. This is
+not always the case for configuration files. Additional passwd, group and
+shadow are not shareable between different systems (UID,GID could be
+different) at all, that's why this should not be below `/usr/share`. Putting
+everything below `/usr/lib/sysimage` is not really intiutive and has already
+conflicts (e.g. rpm).
+Other suggestions were `/usr/etc` as already used by some distributions or
+`/usr/sysconfig`.
