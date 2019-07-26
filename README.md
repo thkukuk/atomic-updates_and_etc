@@ -243,7 +243,7 @@ As there is not yet a standard directory below `/usr`, a new one needs to be cre
 5. `/usr/share/sysconfig` (wouldn't people confuse this with `/etc/sysconfig`, means they want to make changes here?)
 6. `/usr/share/misc`: used by several tools already, but FHS defines it a little bit different
 
-### My old favorite
+### The current favorite
 * `/usr/config` - contains everything, which else would be belong to `/etc`
   * aliases, ethers, protocols, rpc, services: read by glibc NSS plugins after versions in `/etc`
   * shells, ethertypes, network: copied with systemd-tmpfiles
