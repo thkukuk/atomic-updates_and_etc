@@ -249,7 +249,7 @@ As there is not yet a standard directory below `/usr`, a new one needs to be cre
   * shells, ethertypes, network: copied with systemd-tmpfiles
 * `/usr/etc/skel` - systemd-tmpfiles will symlink this files into /etc/skel
 * `/usr/etc/pam.d` - default distribution specific PAM configuration files. `/etc/pam.d` will overwrite this.
-* `usr/config/<application>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
+* `/usr/etc/<application>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
 * `/usr/\*/<application>` - application specific files, can include configuration files, like today
 * `/usr/lib/sysimage/etc` - passwd, group, shadow containing system users
 
@@ -265,4 +265,4 @@ there is a risk, since some Linux and Non-Linux Distributions are using this
 directory already, which could come to conflicts.
 The general comment about `/usr/sysconfig` was, people will confuse it with
 `/etc/sysconfig` and thus they will not support it.
-Currently, `/usr/etc` is still the most promising directory.
+Currently, `/usr/etc` is still the most promising directory. Alternate names are `/usr/config` and `/usr/cfg`.
