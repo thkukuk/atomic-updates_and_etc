@@ -1,6 +1,6 @@
 # Atomic Updates and /etc
 
-`Version 2.4, 2019-07-19`
+`Version 2.5, 2019-07-30`
 
 ## Rationale
 
@@ -69,7 +69,7 @@ There are already different solutions. But they all cover more or less only one 
 
 ## Proposals
 
-If this proposals mentions `/usr/config`, this is only used as example for a location below `/usr`. This can be replaced with any other path in the `/usr` namespace.
+If this proposals mentions `/usr/etc`, this is only used as example for a location below `/usr`. This can be replaced with any other path in the `/usr` namespace.
 
 ### Application configuration files
 
@@ -91,7 +91,7 @@ with configuration snippets (aliases.d, ant.d, bash-completion.d, chrony.d,
 cron.d, depmod.d, dnsmasq.d dracut.conf.d, grub.d, issue.d, logrotate.d,
 modprobe.d, netconfig.d, sudoers.d, sysctl.d,  ...) and there are already
 applications, which installs their default configuration file in
-`/usr/config/<application>` (at-spi2, telemetrics,...). So let's
+`/usr/share/defaults/<application>` (at-spi2, telemetrics,...). So let's
 combine that.
 
 Look at first at Linux-PAM
@@ -114,8 +114,8 @@ admin can overwrite them by putting the changes in `/etc/sysctl.d`. The
 Same for dracut, it works the same way, including that `/etc/dracut.conf` only contains the comment where to put the configuration.
 
 For glibc/ldconfig a solution could look like:
-* mv `/etc/ld.so.conf` to `/usr/config/ldconfig/ld.so.conf`
-* `/usr/config/ldconfig/ld.so.conf.d` for distribution specific paths, e.g. libgraphivz6
+* mv `/etc/ld.so.conf` to `/usr/etc/ldconfig/ld.so.conf`
+* `/usr/etc/ldconfig/ld.so.conf.d` for distribution specific paths, e.g. libgraphivz6
 * `/etc/ld.so.conf.d` for local changes, like nvidia-gfxG04.conf
 
 The disadvantage of this is, based on feedback from several talks: the files
@@ -136,9 +136,9 @@ could be solved relative simple by changes in how it gets packaged.
 Something similar to what systemd is already doing today:
 
 Applications install their default configuration in
-`/usr/config/<application>/`. The admin can copy this configuration file to
+`/usr/etc/<application>/`. The admin can copy this configuration file to
 `/etc` and adjust that. The application prefers the `/etc/` version over the
-`/usr/config/<application>/` version. This possibility is important if the
+`/usr/etc/<application>/` version. This possibility is important if the
 configuration file is in a format, where parts cannot be overwritten easily,
 like xml or json.
 
@@ -149,7 +149,7 @@ configuration.
 
 As workflow:
 * Applications looks for `/etc/application.conf`.
-* If this file does not exist, load `/usr/config/application/application.conf`
+* If this file does not exist, load `/usr/etc/application/application.conf`
 * Look for overrides in `/etc/application.conf.d` and merge them
 
 See https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Examples, "Overriding vendor settings" for more details and examples.
@@ -157,8 +157,8 @@ See https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Examples,
 ### System databases
 
 There are files in `/etc` which are strictly spoken no configuration files. Like `/etc/rpc`, `/etc/services` and `/etc/protocols`. They are changed very seldom, but sometimes new system applications or third party software needs to make additions.
-Move this files to `/usr/config` and let the system search at first in `/etc` and afterwards in `/usr/config`. `/etc` would contain only the changes done by the admin and third party software.
-A glibc NSS plugin to read files in `/usr/config` exist already (https://github.com/kubic-project/libnss_usrfiles), so it is easy configurable and the admin sees, which changes he made.
+Move this files to `/usr/etc` and let the system search at first in `/etc` and afterwards in `/usr/etc`. `/etc` would contain only the changes done by the admin and third party software.
+A glibc NSS plugin to read files in `/usr/etc` exist already (https://github.com/kubic-project/libnss_usrfiles), so it is easy configurable and the admin sees, which changes he made.
 
 
 ### /etc/passwd, /etc/group and /etc/shadow
@@ -196,13 +196,13 @@ Contra:
 
 In this end, this is a huge development efford for something, which does not solve all problems.
 
-#### /usr/config/{passwd,group,shadow}
+#### /usr/etc/{passwd,group,shadow}
 
-Idea: Packages create and manage the needed system accounts in `/usr/config/{passwd,group,shadow}`, the admin will create accounts in `/etc/{passwd,group,shadow}`. Changes of system accounts will be stored in `/etc`. No need to merge data, but also does not solve the problem of duplicate UIDs.
+Idea: Packages create and manage the needed system accounts in `/usr/etc/{passwd,group,shadow}`, the admin will create accounts in `/etc/{passwd,group,shadow}`. Changes of system accounts will be stored in `/etc`. No need to merge data, but also does not solve the problem of duplicate UIDs.
 
 Pro:
-* glibc NSS plugin to read files in `/usr/config` exist already (https://github.com/kubic-project/libnss_usrfiles)
-* Easy to configure in `/etc/nsswitch.conf`: `passwd: files usrfiles`. If `/etc` does not contain the entry, look in `/usr/config`.
+* glibc NSS plugin to read files in `/usr/etc` exist already (https://github.com/kubic-project/libnss_usrfiles)
+* Easy to configure in `/etc/nsswitch.conf`: `passwd: files usrfiles`. If `/etc` does not contain the entry, look in `/usr/etc`.
 
 Contra:
 * Does not solve all problems
@@ -213,13 +213,13 @@ Contra:
 are not shareable across systems and architectures. Alternate path could be
 `/usr/lib/sysimage/etc`, but this is not obvious for users.
 
-#### /usr/config/{passwd,group,shadow} with system user policy
+#### /usr/etc/{passwd,group,shadow} with system user policy
 
-This idea is based on the abvoe `/usr/config` proposal, but is enhanced with a policy: System accounts are only to be created in `/usr/config`, normal accounts have to be created in `/etc`. As the UID space for system accounts and normal accounts is different, and packages should only create system accounts, the problem of duplicate UIDs should be solved. If an administrator has to create a system account, he has to do that in `/usr/config`. As `/usr` is normally read-only on such systems, the distributor has to provide a solution for this. On openSUSE/SUSE, our packaging guidline (https://en.opensuse.org/openSUSE:Packaging_guidelines#Users_and_Groups) provides such a solution.
+This idea is based on the abvoe `/usr/etc` proposal, but is enhanced with a policy: System accounts are only to be created in `/usr/etc`, normal accounts have to be created in `/etc`. As the UID space for system accounts and normal accounts is different, and packages should only create system accounts, the problem of duplicate UIDs should be solved. If an administrator has to create a system account, he has to do that in `/usr/etc`. As `/usr` is normally read-only on such systems, the distributor has to provide a solution for this. On openSUSE/SUSE, our packaging guidline (https://en.opensuse.org/openSUSE:Packaging_guidelines#Users_and_Groups) provides such a solution.
 
 Pro:
-* glibc NSS plugin to read files in `/usr/config` exist already (https://github.com/kubic-project/libnss_usrfiles)
-* Easy to configure in `/etc/nsswitch.conf`: `passwd: files usrfiles`. If `/etc` does not contain the entry, look in `/usr/config`.
+* glibc NSS plugin to read files in `/usr/etc` exist already (https://github.com/kubic-project/libnss_usrfiles)
+* Easy to configure in `/etc/nsswitch.conf`: `passwd: files usrfiles`. If `/etc` does not contain the entry, look in `/usr/etc`.
 * Solves duplicate UID problem
 
 Contra:
@@ -244,11 +244,11 @@ As there is not yet a standard directory below `/usr`, a new one needs to be cre
 6. `/usr/share/misc`: used by several tools already, but FHS defines it a little bit different
 
 ### The current favorite
-* `/usr/config` - contains everything, which else would be belong to `/etc`
+* `/usr/etc` - contains everything, which else would be belong to `/etc`
   * aliases, ethers, protocols, rpc, services: read by glibc NSS plugins after versions in `/etc`
   * shells, ethertypes, network: copied with systemd-tmpfiles
-* `/usr/config/skel` - systemd-tmpfiles will symlink this files into /etc/skel
-* `/usr/config/pam.d` - default distribution specific PAM configuration files. `/etc/pam.d` will overwrite this.
+* `/usr/etc/skel` - systemd-tmpfiles will symlink this files into /etc/skel
+* `/usr/etc/pam.d` - default distribution specific PAM configuration files. `/etc/pam.d` will overwrite this.
 * `usr/config/<application>` - application specific files, read directly or copied to `/etc` via systemd-tmpfiles
 * `/usr/\*/<application>` - application specific files, can include configuration files, like today
 * `/usr/lib/sysimage/etc` - passwd, group, shadow containing system users
@@ -260,6 +260,9 @@ different) at all, that's why this should not be below `/usr/share`. Putting
 everything below `/usr/lib/sysimage` is not really intiutive and has already
 conflicts (e.g. rpm).
 Other suggestions were `/usr/etc` as already used by some distributions or
-`/usr/sysconfig`. While in discussions most people would prefer `/usr/etc`, there is a big problem with this directory: quite some Linux and Non-Linux distributions are using this directory already, but with anther purpose. So this distributions would not be able to follow us.
-The general comment about `/usr/sysconfig` was, people will confuse it with `/etc/sysconfig` and thus they will not support it.
-Currently, `/usr/config` is the most promising directory.
+`/usr/sysconfig`. While in discussions most people would prefer `/usr/etc`,
+there is a risk, since some Linux and Non-Linux Distributions are using this
+directory already, which could come to conflicts.
+The general comment about `/usr/sysconfig` was, people will confuse it with
+`/etc/sysconfig` and thus they will not support it.
+Currently, `/usr/etc` is still the most promising directory.
