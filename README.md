@@ -161,7 +161,7 @@ be used by distribution provided packages.
 
 A very flexible ini file style config parser is currently under development,
 which makes it really easy for an application to merge all the artefacts
-together to one file again: `https://github.com/parlt91/libeconf`
+together: [libeconf](https://github.com/parlt91/libeconf)
 
 There is also stuff, which does not belong to `/etc` at all. `/etc/uefi/certs`
 does contain binary files installed by several RPMs. This are clearly no config
