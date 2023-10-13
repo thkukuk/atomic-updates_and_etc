@@ -101,8 +101,11 @@ There are already different solutions. But they all cover more or less only one 
 ## Proposals
 
 For SUSE/openSUSE the decission was made to use `/usr/etc` as the directory
-below `/usr` for the distribution provided configuration files.
-In theory, this can be replaced with any other directory.
+below `/usr` for the distribution provided configuration files, if the project
+itself does not have already another directory for this. More and more
+projects support the separation of distribution provided configuration
+files and admin made changes or host specific configurations meanwhile,
+but prefer `/usr/lib/<project>/` as directory. This should not be changed.
 
 ### Application configuration files
 
