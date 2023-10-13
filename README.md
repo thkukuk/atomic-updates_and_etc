@@ -1,6 +1,6 @@
 # Atomic Updates and /etc
 
-`Version 3.0, 2019-08-16`
+`Version 3.1, 2023-10-13`
 
 ## Rationale
 
@@ -18,6 +18,13 @@ today. A unique handling of /etc for atomic updates could also help to
 convience upstream developers to add support to their applications for this
 cases.
 
+## Upstream
+
+Meanwhile the problem and requirements are also seen in other projects or needed for additional use cases:
+
+* Hermetic `/usr/`, as explained in the blog [Fitting Everything Together](https://0pointer.net/blog/fitting-everything-together.html)
+* [UAPI Group tracking upstream projects not supporting hermetic-usr for configuration](https://github.com/uapi-group/specifications/issues/76)
+* Formal [Configuration Files Specification](https://github.com/uapi-group/specifications/blob/main/specs/configuration_files_specification.md)
 
 ## Goal
 
